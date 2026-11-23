@@ -1,6 +1,6 @@
 "use client";
 import { fmtAED, fmtPct, useApi, type Overview } from "@/lib/api";
-import { Async, Card, PageTitle, Pill } from "@/components/ui";
+import { Async, Card, PageTitle, Pill, RatingPill } from "@/components/ui";
 
 export default function OverviewPage() {
   const { data: o, loading, error } = useApi<Overview>("/fta/overview");
@@ -23,6 +23,18 @@ export default function OverviewPage() {
                   <div className="mt-1 text-xl font-semibold text-navy">{v}</div>
                 </div>
               ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+              {(["STRONG", "WEAK", "FAIL", "PENDING"] as const).map((r) => (
+                <div key={r} className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="text-xs uppercase tracking-wide text-slate-500">Invoices rated <RatingPill rating={r} /></div>
+                  <div className="mt-1 text-xl font-semibold text-navy">{o.invoices_by_rating[r] ?? 0}</div>
+                </div>
+              ))}
+              <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-slate-500">Officer overrides of agent</div>
+                <div className="mt-1 text-xl font-semibold text-navy">{o.officer_overrides}</div>
+              </div>
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <Card title="Applications by status">

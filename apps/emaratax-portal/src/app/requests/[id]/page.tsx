@@ -24,21 +24,52 @@ const Q = ({ n, text, children }: { n: number; text: string; children: React.Rea
   <fieldset className="space-y-3 border-b border-line pb-5"><legend className="mb-2 font-semibold"><span className="me-2 text-gold">{n}.</span>{text}</legend>{children}</fieldset>
 );
 
-function Particulars({ inv, app }: { inv: Invoice; app: RequestView["application"] }) {
+// Suppliers see only what was submitted, never the FTA's internal assessment (rating, reasons, eligible VAT).
+function Particulars({ inv, app, status }: { inv: Invoice; app: RequestView["application"]; status: string }) {
+  const items = inv.line_items ?? [];
   return (
     <div className="card">
       <h2 className="mb-2 font-semibold">Invoice particulars</h2>
       <dl>
         <Row k="Invoice no" v={inv.invoice_no} /><Row k="Invoice date" v={inv.invoice_date} />
+        {inv.supply_date && <Row k="Supply date" v={inv.supply_date} />}
+        {inv.supplier_address && <Row k="Supplier address" v={inv.supplier_address} />}
+        {inv.recipient_name && <Row k="Recipient" v={inv.recipient_name} />}
+        {inv.recipient_address && <Row k="Recipient address" v={inv.recipient_address} />}
         <Row k="Description" v={inv.description} />
         <Row k="Taxable amount" v={aed(inv.taxable_amount)} /><Row k="VAT amount" v={aed(inv.vat_amount)} /><Row k="Total" v={aed(inv.total)} />
         <Row k="Applicant" v={app.applicant_name} /><Row k="Plot" v={`${app.plot_no} (${app.emirate})`} />
         <Row k="Maskan ref" v={app.maskan_ref} />
-        <Row k="Invoice status" v={<StatusPill status={inv.status} />} />
+        <Row k="Request status" v={<StatusPill status={status} />} />
       </dl>
+      {items.length > 0 && (
+        <div className="mt-4 overflow-x-auto">
+          <h3 className="mb-2 text-sm font-semibold">Line items</h3>
+          <table className="w-full text-sm">
+            <thead className="bg-page text-xs uppercase text-muted">
+              <tr>{["Description", "Qty", "Unit price", "Amount"].map((h, n) => <th key={h} className={`px-2 py-1.5 font-medium ${n ? "text-end" : "text-start"}`}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {items.map((l, n) => (
+                <tr key={n} className="border-t border-line">
+                  <td className="px-2 py-1.5">{l.description}</td>
+                  <td className="px-2 py-1.5 text-end">{l.quantity ?? "-"}</td>
+                  <td className="px-2 py-1.5 text-end">{aed(l.unit_price)}</td>
+                  <td className="px-2 py-1.5 text-end">{aed(l.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
+
+const CLOSED: Record<string, string> = {
+  EXPIRED: "The time limit for this confirmation has passed. The request is closed and can no longer be answered.",
+  CANCELLED: "This request was withdrawn by the FTA. No action is needed from you.",
+};
 
 function ReadOnly({ r }: { r: NonNullable<RequestView["response"]> }) {
   return (
@@ -116,11 +147,15 @@ export default function RequestPage() {
       {err && <p role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">{err}</p>}
       {!data && !err && <p className="text-muted">Loading…</p>}
       {data && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Particulars inv={data.invoice} app={data.application} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Particulars inv={data.invoice} app={data.application} status={data.request.status} />
           {done ? (
             <div className="space-y-4">
-              <div className="card flex items-center gap-3">Result: <StatusPill status={data.invoice.status} /></div>
+              {CLOSED[data.request.status] ? (
+                <div role="status" className="card flex items-start gap-3 bg-gold-soft"><StatusPill status={data.request.status} /><p className="text-sm">{CLOSED[data.request.status]}</p></div>
+              ) : (
+                <div className="card flex items-center gap-3"><StatusPill status={data.request.status} /><span className="text-sm">Thank you, your response has been submitted to the FTA.</span></div>
+              )}
               {data.response && <ReadOnly r={data.response} />}
             </div>
           ) : (

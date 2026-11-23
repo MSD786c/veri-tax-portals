@@ -6,15 +6,26 @@ export const TEST_SUPPLIERS = [
   { trn: "100222222200003", name: "Gulf Steel & Cement" },
   { trn: "100333333300003", name: "Desert Rose Electrical" },
   { trn: "100444444400003", name: "Emirates Home Furnishing" },
+  { trn: "100555555500003", name: "Falcon Pools & Landscaping" },
+  { trn: "100666666600003", name: "Oasis Security Systems" },
+  { trn: "100777777700003", name: "Marina Aluminium & Glass" },
+  { trn: "100888888800003", name: "Sahara Plumbing Services" },
 ];
 
-export type RequestStatus = "PENDING" | "RESPONDED" | "EXPIRED";
+// CANCELLED: the FTA withdrew the request because the invoice already failed a check.
+export type RequestStatus = "PENDING" | "RESPONDED" | "EXPIRED" | "CANCELLED";
 export type Supplier = { trn: string; legal_name: string; emirate: string; address: string };
+export type LineItem = { description: string; quantity: number | null; unit_price: number | null; amount: number | null };
+// The API also returns the FTA's internal assessment (rating, rating_reasons, fix_guidance,
+// officer_decision, eligible_vat_amount, suggested_eligible_vat, status). Deliberately left
+// out of this type so the supplier portal cannot render it.
 export type Invoice = {
   id: number; invoice_no: string; invoice_date: string; title: string; description: string;
   taxable_amount: number; vat_amount: number; total: number; currency: string;
   plot_no: string; supplier_trn: string;
-  status: string; // VERIFIED | FLAGGED | DISPUTED | AWAITING_SUPPLIER | ...
+  invoice_type?: "FULL" | "SIMPLIFIED" | null; supply_date?: string | null;
+  supplier_address?: string; recipient_name?: string; recipient_address?: string;
+  line_items?: LineItem[];
 };
 export type SupplierResponse = {
   issued: boolean; particulars_confirmed: boolean; corrections: Record<string, unknown>;

@@ -15,7 +15,7 @@ export function StatusPill({ status }: { status: string }) {
     PENDING: "bg-amber-100 text-amber-800", AWAITING_SUPPLIER: "bg-amber-100 text-amber-800",
     RESPONDED: "bg-sky-100 text-sky-800", VERIFIED: "bg-green-100 text-green-800",
     FLAGGED: "bg-orange-100 text-orange-800", DISPUTED: "bg-red-100 text-red-800",
-    EXPIRED: "bg-gray-200 text-gray-700",
+    EXPIRED: "bg-gray-200 text-gray-700", CANCELLED: "bg-slate-200 text-slate-700",
   };
   return <span className={`pill ${c[status] ?? "bg-gray-100 text-gray-700"}`}>{status.replace(/_/g, " ")}</span>;
 }
