@@ -1,15 +1,10 @@
 import { useSyncExternalStore } from "react";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Demo companies for the MMB sample invoices (scripts/load_demo_supplier.py in veri-tax).
 export const TEST_SUPPLIERS = [
-  { trn: "100111111100003", name: "Al Noor Building Contracting" },
-  { trn: "100222222200003", name: "Gulf Steel & Cement" },
-  { trn: "100333333300003", name: "Desert Rose Electrical" },
-  { trn: "100444444400003", name: "Emirates Home Furnishing" },
-  { trn: "100555555500003", name: "Falcon Pools & Landscaping" },
-  { trn: "100666666600003", name: "Oasis Security Systems" },
-  { trn: "100777777700003", name: "Marina Aluminium & Glass" },
-  { trn: "100888888800003", name: "Sahara Plumbing Services" },
+  { trn: "100000000000003", name: "Mumtaz Building Materials" },
+  { trn: "100000000000011", name: "Vinay Building Materials" },
 ];
 
 // CANCELLED: the FTA withdrew the request because the invoice already failed a check.
