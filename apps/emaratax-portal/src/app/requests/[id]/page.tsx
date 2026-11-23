@@ -11,17 +11,17 @@ const TYPE: Record<Field, string> = { invoice_no: "text", invoice_date: "date", 
 const LABEL: Record<Field, string> = { invoice_no: "Invoice no", invoice_date: "Invoice date", taxable_amount: "Taxable amount", vat_amount: "VAT amount", total: "Total" };
 
 const Row = ({ k, v }: { k: string; v: React.ReactNode }) => (
-  <div className="flex justify-between gap-4 border-b border-line py-2 text-sm"><dt className="text-muted">{k}</dt><dd className="text-end font-medium">{v}</dd></div>
+  <div className="flex justify-between gap-4 border-b border-line py-2.5 text-sm last:border-b-0"><dt className="shrink-0 text-muted">{k}</dt><dd className="min-w-0 break-words text-end font-medium tabular-nums">{v}</dd></div>
 );
 const Yes = ({ v, set, name }: { v: boolean | null; set: (b: boolean) => void; name: string }) => (
-  <div className="flex gap-6 text-sm">
+  <div className="flex flex-wrap gap-2 text-sm">
     {[true, false].map((b) => (
-      <label key={String(b)} className="flex items-center gap-2"><input type="radio" name={name} checked={v === b} onChange={() => set(b)} />{b ? "Yes" : "No"}</label>
+      <label key={String(b)} className={`flex min-w-24 cursor-pointer items-center gap-2 rounded-ctl border px-3 py-2 ${v === b ? "border-gold bg-gold-soft font-medium" : "border-line hover:bg-gold-soft"}`}><input type="radio" name={name} checked={v === b} onChange={() => set(b)} />{b ? "Yes" : "No"}</label>
     ))}
   </div>
 );
 const Q = ({ n, text, children }: { n: number; text: string; children: React.ReactNode }) => (
-  <fieldset className="space-y-3 border-b border-line pb-5"><legend className="mb-2 font-semibold"><span className="me-2 text-gold">{n}.</span>{text}</legend>{children}</fieldset>
+  <fieldset className="space-y-3 border-b border-line pb-6"><legend className="mb-3 flex items-start gap-3 font-semibold"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-gold-soft text-xs font-bold text-gold-dark">{n}</span><span>{text}</span></legend>{children}</fieldset>
 );
 
 // Suppliers see only what was submitted, never the FTA's internal assessment (rating, reasons, eligible VAT).
@@ -29,7 +29,7 @@ function Particulars({ inv, app, status }: { inv: Invoice; app: RequestView["app
   const items = inv.line_items ?? [];
   return (
     <div className="card">
-      <h2 className="mb-2 font-semibold">Invoice particulars</h2>
+      <h2 className="mb-3 text-base font-semibold">Invoice particulars</h2>
       <dl>
         <Row k="Invoice no" v={inv.invoice_no} /><Row k="Invoice date" v={inv.invoice_date} />
         {inv.supply_date && <Row k="Supply date" v={inv.supply_date} />}
@@ -43,23 +43,25 @@ function Particulars({ inv, app, status }: { inv: Invoice; app: RequestView["app
         <Row k="Request status" v={<StatusPill status={status} />} />
       </dl>
       {items.length > 0 && (
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-6">
           <h3 className="mb-2 text-sm font-semibold">Line items</h3>
-          <table className="w-full text-sm">
-            <thead className="bg-page text-xs uppercase text-muted">
-              <tr>{["Description", "Qty", "Unit price", "Amount"].map((h, n) => <th key={h} className={`px-2 py-1.5 font-medium ${n ? "text-end" : "text-start"}`}>{h}</th>)}</tr>
+          <div className="overflow-x-auto rounded-ctl border border-line">
+          <table className="tbl">
+            <thead>
+              <tr>{["Description", "Qty", "Unit price", "Amount"].map((h, n) => <th key={h} className={n ? "text-end" : ""}>{h}</th>)}</tr>
             </thead>
             <tbody>
               {items.map((l, n) => (
-                <tr key={n} className="border-t border-line">
-                  <td className="px-2 py-1.5">{l.description}</td>
-                  <td className="px-2 py-1.5 text-end">{l.quantity ?? "-"}</td>
-                  <td className="px-2 py-1.5 text-end">{aed(l.unit_price)}</td>
-                  <td className="px-2 py-1.5 text-end">{aed(l.amount)}</td>
+                <tr key={n}>
+                  <td>{l.description}</td>
+                  <td className="text-end">{l.quantity ?? "-"}</td>
+                  <td className="whitespace-nowrap text-end">{aed(l.unit_price)}</td>
+                  <td className="whitespace-nowrap text-end">{aed(l.amount)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
@@ -74,7 +76,7 @@ const CLOSED: Record<string, string> = {
 function ReadOnly({ r }: { r: NonNullable<RequestView["response"]> }) {
   return (
     <div className="card">
-      <h2 className="mb-2 font-semibold">Your response</h2>
+      <h2 className="mb-3 text-base font-semibold">Your response</h2>
       <dl>
         <Row k="Issued this invoice" v={r.issued ? "Yes" : "No (disputed)"} />
         {r.issued && <>
@@ -142,12 +144,13 @@ export default function RequestPage() {
 
   return (
     <Shell>
-      <Link href="/" className="text-sm text-gold-dark underline">← Back to dashboard</Link>
-      <h1 className="my-3 text-xl font-semibold">Confirm tax invoice {data?.invoice.invoice_no}</h1>
-      {err && <p role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">{err}</p>}
+      <Link href="/" className="link text-sm">← Back to dashboard</Link>
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight">Confirm tax invoice <span className="tabular-nums">{data?.invoice.invoice_no}</span></h1>
+      <p className="mt-1 mb-6 text-sm text-muted">Review the particulars submitted by the applicant and answer the questions below.</p>
+      {err && <p role="alert" className="mb-4 rounded-ctl border border-bad/30 bg-bad-bg p-3 text-sm text-bad">{err}</p>}
       {!data && !err && <p className="text-muted">Loading…</p>}
       {data && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <Particulars inv={data.invoice} app={data.application} status={data.request.status} />
           {done ? (
             <div className="space-y-4">
@@ -159,10 +162,11 @@ export default function RequestPage() {
               {data.response && <ReadOnly r={data.response} />}
             </div>
           ) : (
-            <form onSubmit={submit} className="card space-y-5">
+            <form onSubmit={submit} className="card space-y-6 p-6">
+              <h2 className="text-base font-semibold">Supplier confirmation</h2>
               <Q n={1} text="Did you issue this tax invoice?">
                 <Yes name="issued" v={issued} set={setIssued} />
-                {issued === false && <p className="text-sm text-red-700">The invoice will be submitted as disputed.</p>}
+                {issued === false && <p className="rounded-ctl bg-bad-bg px-3 py-2 text-sm text-bad">The invoice will be submitted as disputed.</p>}
               </Q>
               {issued && <>
                 <Q n={2} text="Do the particulars shown match your records?">
@@ -178,8 +182,8 @@ export default function RequestPage() {
                 </Q>
                 <Q n={3} text="Consideration for this invoice">
                   <div className="space-y-2 text-sm">
-                    <label className="flex items-center gap-2"><input type="radio" checked={paid === "RECEIVED"} onChange={() => setPaid("RECEIVED")} />Received in full</label>
-                    <label className="flex items-center gap-2"><input type="radio" checked={paid === "PARTIAL_OR_RETENTION"} onChange={() => setPaid("PARTIAL_OR_RETENTION")} />Partly received / retention</label>
+                    <label className="flex cursor-pointer items-center gap-2"><input type="radio" checked={paid === "RECEIVED"} onChange={() => setPaid("RECEIVED")} />Received in full</label>
+                    <label className="flex cursor-pointer items-center gap-2"><input type="radio" checked={paid === "PARTIAL_OR_RETENTION"} onChange={() => setPaid("PARTIAL_OR_RETENTION")} />Partly received / retention</label>
                   </div>
                   {paid === "RECEIVED" ? (
                     <div><label className="label" htmlFor="rd">Date received</label><input id="rd" type="date" className="input" value={f.received_date} onChange={(e) => set("received_date", e.target.value)} /></div>
@@ -195,10 +199,10 @@ export default function RequestPage() {
                   <input aria-label="VAT return period" className="input" placeholder="2026-Q2 or Apr-2026" value={f.vat_return_period} onChange={(e) => set("vat_return_period", e.target.value)} />
                 </Q>
               </>}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div><label className="label" htmlFor="by">Declared by (name or email)</label><input id="by" className="input" value={f.declared_by} onChange={(e) => set("declared_by", e.target.value)} /></div>
-                <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={f.declaration} onChange={(e) => set("declaration", e.target.checked)} />I declare that the information provided is true and correct.</label>
-                <button className="btn" disabled={!ready || busy}>{busy ? "Submitting…" : "Submit response"}</button>
+                <label className="flex cursor-pointer items-start gap-2 rounded-ctl bg-page p-3 text-sm"><input type="checkbox" className="mt-1" checked={f.declaration} onChange={(e) => set("declaration", e.target.checked)} />I declare that the information provided is true and correct.</label>
+                <button className="btn w-full sm:w-auto" disabled={!ready || busy}>{busy ? "Submitting…" : "Submit response"}</button>
               </div>
             </form>
           )}
