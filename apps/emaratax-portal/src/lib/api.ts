@@ -4,7 +4,6 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000
 // Demo companies for the MMB sample invoices (scripts/load_demo_supplier.py in veri-tax).
 export const TEST_SUPPLIERS = [
   { trn: "100000000000003", name: "Mumtaz Building Materials" },
-  { trn: "100000000000011", name: "Vinay Building Materials" },
 ];
 
 // CANCELLED: the FTA withdrew the request because the invoice already failed a check.
