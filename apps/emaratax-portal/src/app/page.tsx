@@ -29,45 +29,56 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <h1 className="mb-4 text-xl font-semibold">Supplier Dashboard</h1>
-      <div className="mb-6 grid grid-cols-3 gap-2 sm:max-w-xl sm:gap-4">
-        <div className="card p-3 sm:p-5"><div className="text-2xl font-bold sm:text-3xl text-gold">{count("PENDING")}</div><div className="text-xs text-muted hyphens-auto break-words sm:text-sm">Pending confirmations</div></div>
-        <div className="card p-3 sm:p-5"><div className="text-2xl font-bold sm:text-3xl">{count("RESPONDED")}</div><div className="text-xs text-muted hyphens-auto break-words sm:text-sm">Responded</div></div>
-        <div className="card p-3 sm:p-5"><div className="text-2xl font-bold sm:text-3xl text-muted">{count("CLOSED")}</div><div className="text-xs text-muted hyphens-auto break-words sm:text-sm">Closed</div></div>
+      <h1 className="text-2xl font-semibold tracking-tight">Supplier Dashboard</h1>
+      <p className="mt-1 mb-6 text-sm text-muted">VAT refund confirmation requests for invoices issued under your TRN.</p>
+      <div className="mb-8 grid grid-cols-3 gap-2 sm:max-w-2xl sm:gap-4">
+        {([["PENDING", "Pending confirmations", "text-gold-dark"], ["RESPONDED", "Responded", "text-ink"], ["CLOSED", "Closed", "text-muted"]] as const).map(([t, label, color]) => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`card p-3 text-start hover:border-gold sm:p-5 ${tab === t ? "border-gold" : ""}`}>
+            <div className={`text-2xl font-semibold tabular-nums sm:text-3xl ${color}`}>{count(t)}</div>
+            <div className="mt-1 text-xs break-words hyphens-auto text-muted sm:text-sm">{label}</div>
+          </button>
+        ))}
       </div>
-      <section id="requests" className="card overflow-x-auto p-0">
-        <div className="flex gap-1 border-b border-line px-3 pt-3">
+      <section id="requests" className="card overflow-hidden p-0">
+        <div className="flex gap-1 overflow-x-auto border-b border-line px-2 sm:px-4">
           {(Object.keys(TABS) as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`rounded-t px-4 py-2 text-sm ${tab === t ? "border-b-2 border-gold font-semibold text-gold-dark" : "text-muted"}`}>
-              {TABS[t].label} ({count(t)})
+              className={`-mb-px whitespace-nowrap border-b-2 px-3 py-3 text-sm sm:px-4 ${tab === t ? "border-gold font-semibold text-gold-dark" : "border-transparent text-muted hover:text-ink"}`}>
+              {TABS[t].label} <span className="tabular-nums">({count(t)})</span>
             </button>
           ))}
         </div>
-        <p className="px-4 pt-3 text-sm text-muted">{TABS[tab].hint}</p>
-        {err && <p className="p-4 text-sm text-red-700">Could not load requests: {err}</p>}
-        <table className="w-full text-sm">
-          <thead className="bg-page text-start text-xs uppercase text-muted">
-            <tr>{["Invoice no", "Date", "Applicant", "Plot", "VAT", "Total", "Due", "Status", ""].map((h) => <th key={h} className="px-3 py-2 text-start font-medium">{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {shown.map(({ request: q, invoice: i, application: a }) => (
-              <tr key={q.id} className="border-t border-line">
-                <td className="px-3 py-2 font-medium">{i.invoice_no}</td>
-                <td className="px-3 py-2">{i.invoice_date}</td>
-                <td className="px-3 py-2">{a.applicant_name}</td>
-                <td className="px-3 py-2">{a.plot_no}</td>
-                <td className="px-3 py-2">{aed(i.vat_amount)}</td>
-                <td className="px-3 py-2">{aed(i.total)}</td>
-                <td className="px-3 py-2">{date(q.due_at)}</td>
-                <td className="px-3 py-2"><StatusPill status={q.status} /></td>
-                <td className="px-3 py-2"><Link className="font-semibold text-gold-dark underline" href={`/requests/${q.id}`}>{q.status === "PENDING" ? "Respond" : "View"}</Link></td>
-              </tr>
-            ))}
-            {rows && !shown.length && <tr><td colSpan={9} className="p-6 text-center text-muted">No {TABS[tab].label.toLowerCase()} requests.</td></tr>}
-            {!rows && !err && <tr><td colSpan={9} className="p-6 text-center text-muted">Loading…</td></tr>}
-          </tbody>
-        </table>
+        <p className="px-4 py-3 text-sm text-muted">{TABS[tab].hint}</p>
+        {err && <p role="alert" className="mx-4 mb-3 rounded-ctl bg-bad-bg p-3 text-sm text-bad">Could not load requests: {err}</p>}
+        <div className="overflow-x-auto border-t border-line">
+          <table className="tbl">
+            <thead>
+              <tr>{["Invoice no", "Date", "Applicant", "Plot", "VAT", "Total", "Due", "Status", ""].map((h, n) => <th key={h || n} className={n === 4 || n === 5 ? "text-end" : ""}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {shown.map(({ request: q, invoice: i, application: a }) => (
+                <tr key={q.id}>
+                  <td className="whitespace-nowrap font-medium">{i.invoice_no}</td>
+                  <td className="whitespace-nowrap">{i.invoice_date}</td>
+                  <td>{a.applicant_name}</td>
+                  <td className="whitespace-nowrap">{a.plot_no}</td>
+                  <td className="whitespace-nowrap text-end">{aed(i.vat_amount)}</td>
+                  <td className="whitespace-nowrap text-end">{aed(i.total)}</td>
+                  <td className="whitespace-nowrap">{date(q.due_at)}</td>
+                  <td><StatusPill status={q.status} /></td>
+                  <td className="text-end">
+                    {q.status === "PENDING"
+                      ? <Link className="btn px-3 py-1.5 text-xs" href={`/requests/${q.id}`}>Respond</Link>
+                      : <Link className="btn-ghost px-3 py-1 text-xs" href={`/requests/${q.id}`}>View</Link>}
+                  </td>
+                </tr>
+              ))}
+              {rows && !shown.length && <tr><td colSpan={9} className="p-8 text-center text-muted">No {TABS[tab].label.toLowerCase()} requests.</td></tr>}
+              {!rows && !err && <tr><td colSpan={9} className="p-8 text-center text-muted">Loading…</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </section>
     </Shell>
   );

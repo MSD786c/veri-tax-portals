@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
+/* Shared veri-tax design system: keep identical across the three portals. */
 @theme inline {
   --color-gold: #b68a35;
-  --color-gold-dark: #8f6a22;
-  --color-gold-soft: #f6efdf;
-  --color-ink: #2b2b2b;
-  --color-muted: #6b6b6b;
+  --color-gold-dark: #8c6a28;
+  --color-gold-soft: #f6efe1;
+  --color-navy: #0f2a3f;
+  --color-navy-2: #17384f;
+  --color-ink: #1c2127;
+  --color-muted: #5b6470;
   --color-line: #e3e0d8;
-  --color-page: #f4f4f2;
+  --color-page: #f4f3ef;
+  --color-surface: #ffffff;
+  --color-ok: #1f7a4d;
+  --color-ok-bg: #e5f3eb;
+  --color-warn: #8a5a00;
+  --color-warn-bg: #fbf0d6;
+  --color-bad: #a3302a;
+  --color-bad-bg: #fbe8e6;
+  --color-info: #1f5f8b;
+  --color-info-bg: #e6eff6;
+  --color-neutral: #5b6470;
+  --color-neutral-bg: #eeedea;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
+  --radius-card: 8px;
+  --radius-ctl: 6px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06);
 }
 
 body {
   background: var(--color-page);
   color: var(--color-ink);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
+:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
+input[type="radio"], input[type="checkbox"] { accent-color: var(--color-gold); }
+
 @layer components {
-  .card { @apply rounded-md border border-line bg-white p-5; }
+  .card { @apply rounded-card border border-line bg-surface p-5 shadow-card; }
   .label { @apply mb-1 block text-sm font-medium text-ink; }
-  .input { @apply w-full rounded border border-line bg-white px-3 py-2 text-sm focus:border-gold focus:outline-2 focus:outline-gold/40; }
-  .btn { @apply rounded bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark disabled:opacity-50; }
-  .btn-ghost { @apply rounded border border-line bg-white px-3 py-1.5 text-sm hover:bg-page; }
-  .pill { @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .input { @apply w-full rounded-ctl border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-gold focus:outline-2 focus:outline-offset-0 focus:outline-gold/40; }
+  .btn { @apply inline-flex items-center justify-center rounded-ctl bg-gold px-4 py-2 text-sm font-semibold text-white hover:bg-gold-dark active:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-ghost { @apply inline-flex items-center justify-center rounded-ctl border border-line bg-surface px-3 py-1.5 text-sm font-medium text-ink hover:bg-gold-soft; }
+  .pill { @apply inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .pill-ok { @apply bg-ok-bg text-ok; }
+  .pill-warn { @apply bg-warn-bg text-warn; }
+  .pill-bad { @apply bg-bad-bg text-bad; }
+  .pill-info { @apply bg-info-bg text-info; }
+  .pill-neutral { @apply bg-neutral-bg text-neutral; }
+  .link { @apply font-semibold text-gold-dark underline-offset-2 hover:underline; }
+  .tbl { @apply w-full text-sm tabular-nums; }
+  .tbl th { @apply whitespace-nowrap border-b border-line bg-page px-3 py-2 text-start text-[11px] font-semibold uppercase tracking-wide text-muted; }
+  .tbl td { @apply border-b border-line px-3 py-2.5; }
+  .tbl tbody tr:last-child td { @apply border-b-0; }
+  .tbl tbody tr:hover td { @apply bg-gold-soft; }
 }
