@@ -11,7 +11,7 @@ export default function Suppliers() {
     <>
       <PageTitle>Suppliers</PageTitle>
       <Card title="Suppliers">
-        <input className={`${inputCls} mb-3 w-72`} placeholder="Search name or TRN" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className={`${inputCls} mb-3 w-full sm:w-72`} placeholder="Search name or TRN" value={q} onChange={(e) => setQ(e.target.value)} />
         <Async loading={loading} error={error}>
           <Table>
             <thead><tr><Th>Supplier</Th><Th>TRN</Th><Th right>Apps</Th><Th right>Invoices</Th><Th right>VAT claimed</Th><Th right>Verified</Th><Th right>Rejected</Th><Th right>Response rate</Th><Th>Risk</Th></tr></thead>

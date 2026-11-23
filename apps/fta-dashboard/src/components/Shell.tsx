@@ -9,6 +9,7 @@ const NAV = [
   { href: "/applications", label: "Applications" },
   { href: "/suppliers", label: "Suppliers" },
   { href: "/rejections", label: "Rejections" },
+  { href: "/documents", label: "Documents" },
 ];
 
 // "" = not signed in, undefined = server render
@@ -31,13 +32,13 @@ export default function Shell({ children }: { children: ReactNode }) {
   if (officer === "") return null; // redirecting to /login (undefined = SSR: render the shell so pages prerender)
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-56 shrink-0 flex-col bg-navy text-slate-200">
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <aside className="flex shrink-0 flex-col bg-navy text-slate-200 md:w-56">
         <div className="border-b-2 border-gold px-4 py-4 text-sm font-semibold leading-tight text-white">
           FTA · veri-tax
           <div className="text-xs font-normal text-gold">Officer Console</div>
         </div>
-        <nav className="flex-1 py-2">
+        <nav className="flex flex-wrap md:block md:flex-1 md:py-2">
           {NAV.map((n) => {
             const active = n.href === "/" ? path === "/" : path.startsWith(n.href);
             return (
@@ -65,7 +66,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
         <footer className="px-6 py-3 text-xs text-slate-500">Hackathon prototype – not an official FTA service</footer>
       </div>
     </div>

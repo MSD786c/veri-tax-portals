@@ -10,7 +10,7 @@ const TONE: Record<string, string> = {
 const STATUS_TONE: Record<string, string> = {
   PASS: "green", VERIFIED: "green", AUTO_VERIFIED: "green", SUPPLIER_CONFIRMED: "green", RECONCILED: "green", APPROVED: "green", RESPONDED: "green",
   FAIL: "red", REJECTED: "red", AUTO_REJECTED: "red", DISPUTED: "red",
-  UNCERTAIN: "amber", FLAGGED: "amber", PARTIALLY_APPROVED: "amber", NO_SUPPLIER_RESPONSE: "amber", PENDING: "amber",
+  UNCERTAIN: "amber", EXPIRED: "amber", CANCELLED: "grey", NOT_APPLICABLE: "grey", EXTRACTED: "green", FAILED: "red", UPLOADED: "blue", FLAGGED: "amber", PARTIALLY_APPROVED: "amber", NO_SUPPLIER_RESPONSE: "amber", PENDING: "amber",
   READY_FOR_DECISION: "blue", AWAITING_SUPPLIERS: "blue", AWAITING_SUPPLIER: "blue", NEEDS_SUPPLIER: "blue", IN_VERIFICATION: "blue",
 };
 
@@ -19,11 +19,26 @@ export function Pill({ value, tone }: { value: string; tone?: string }) {
   return <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${t}`}>{value.replaceAll("_", " ")}</span>;
 }
 
+const RATING_TONE: Record<string, string> = { STRONG: "green", WEAK: "amber", FAIL: "red" };
+export const RatingPill = ({ rating }: { rating: string | null | undefined }) =>
+  rating && rating !== "PENDING" ? <Pill value={rating} tone={RATING_TONE[rating]} /> : <Pill value="Pending" tone="grey" />;
+
+// Compact per-rating counts, e.g. for an application row. Order: STRONG, WEAK, FAIL, PENDING.
+export function RatingCounts({ counts }: { counts: Partial<Record<string, number>> }) {
+  const keys = ["STRONG", "WEAK", "FAIL", "PENDING"].filter((k) => counts[k]);
+  if (!keys.length) return <>-</>;
+  return (
+    <span className="inline-flex flex-wrap gap-1">
+      {keys.map((k) => <span key={k} className="inline-flex items-center gap-0.5"><RatingPill rating={k} /><b className="text-xs">{counts[k]}</b></span>)}
+    </span>
+  );
+}
+
 export function Card({ title, children, right }: { title?: string; children: ReactNode; right?: ReactNode }) {
   return (
     <section className="rounded-md border border-slate-200 bg-white shadow-sm">
       {title && (
-        <header className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
+        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-sm font-semibold text-navy">{title}</h2>
           {right}
         </header>

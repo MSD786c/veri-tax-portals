@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { fmtAED, fmtPct, useApi, type SupplierDetail } from "@/lib/api";
-import { Async, Card, PageTitle, Pill, Table, Td, Th } from "@/components/ui";
+import { Async, Card, PageTitle, Pill, RatingPill, Table, Td, Th } from "@/components/ui";
 
 export default function SupplierPage() {
   const { trn } = useParams<{ trn: string }>();
@@ -29,13 +29,13 @@ export default function SupplierPage() {
             </Card>
             <Card title="Invoices">
               <Table>
-                <thead><tr><Th>Invoice</Th><Th>Date</Th><Th>Application</Th><Th>Status</Th><Th right>VAT</Th><Th right>Eligible</Th></tr></thead>
+                <thead><tr><Th>Invoice</Th><Th>Date</Th><Th>Application</Th><Th>Status</Th><Th>Rating</Th><Th right>VAT</Th><Th right>Eligible</Th></tr></thead>
                 <tbody>
                   {s.invoices.map((i) => (
                     <tr key={i.id}>
                       <Td>{i.invoice_no}</Td><Td>{i.invoice_date}</Td>
                       <Td><Link className="text-sky-800 hover:underline" href={`/applications/${i.application_id}`}>#{i.application_id}</Link></Td>
-                      <Td><Pill value={i.status} /></Td><Td right>{fmtAED(i.vat_amount)}</Td><Td right>{fmtAED(i.eligible_vat_amount)}</Td>
+                      <Td><Pill value={i.status} /></Td><Td><RatingPill rating={i.rating} /></Td><Td right>{fmtAED(i.vat_amount)}</Td><Td right>{fmtAED(i.eligible_vat_amount)}</Td>
                     </tr>
                   ))}
                 </tbody>
