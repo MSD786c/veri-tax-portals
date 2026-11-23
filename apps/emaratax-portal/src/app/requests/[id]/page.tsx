@@ -75,6 +75,44 @@ function Particulars({ inv, app, status }: { inv: Invoice; app: RequestView["app
   );
 }
 
+// Backend format (rules.PERIOD_RE): monthly "Nov-2026", quarterly "2026-Q4".
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const defaultPeriod = (invoiceDate: string) => `${MON[+invoiceDate.slice(5, 7) - 1]}-${invoiceDate.slice(0, 4)}`;
+
+// Month/quarter picker. Periods before the invoice date are disabled: SC-05 would fail them.
+// Native radios give arrow-key navigation (skipping disabled ones) for free.
+function PeriodPicker({ value, onChange, invoiceDate }: { value: string; onChange: (v: string) => void; invoiceDate: string }) {
+  const minY = +invoiceDate.slice(0, 4), minM = +invoiceDate.slice(5, 7) - 1;
+  const quarterly = value.includes("-Q");
+  const valY = +(value.match(/\d{4}/)?.[0] ?? minY);
+  const valM = quarterly ? (+value.slice(-1) - 1) * 3 : MON.indexOf(value.slice(0, 3));
+  const [year, setYear] = useState(valY);
+  const maxY = Math.max(minY, new Date().getFullYear()) + 1; // ponytail: no filing-calendar lookup, one year of headroom
+  const opts = quarterly
+    ? [0, 1, 2, 3].map((i) => ({ v: `${year}-Q${i + 1}`, label: `Q${i + 1}`, sub: `${MON[i * 3]}–${MON[i * 3 + 2]}`, off: year < minY || (year === minY && i < Math.floor(minM / 3)) }))
+    : MON.map((m, i) => ({ v: `${m}-${year}`, label: m, sub: "", off: year < minY || (year === minY && i < minM) }));
+  const toggle = (q: boolean) => onChange(q ? `${valY}-Q${Math.floor(valM / 3) + 1}` : `${MON[valY === minY ? Math.max(valM, minM) : valM]}-${valY}`);
+  return (
+    <div className="pp">
+      <label className="pp-switch"><input type="checkbox" role="switch" checked={quarterly} onChange={(e) => toggle(e.target.checked)} /><span>Quarterly filer</span></label>
+      <div className="pp-year">
+        <button type="button" className="pp-nav" aria-label="Previous year" disabled={year <= minY} onClick={() => setYear(year - 1)}><Icon n="chevl" s={16} /></button>
+        <b aria-live="polite">{year}</b>
+        <button type="button" className="pp-nav" aria-label="Next year" disabled={year >= maxY} onClick={() => setYear(year + 1)}><Icon n="chevr" s={16} /></button>
+      </div>
+      <div role="radiogroup" aria-label={`${quarterly ? "Quarter" : "Month"} of ${year}`} className={`pp-grid${quarterly ? " q" : ""}`}>
+        {opts.map((o) => (
+          <label key={o.v} className={`${value === o.v ? "on" : ""}${o.off ? " off" : ""}`}>
+            <input type="radio" className="sr" name="vat_return_period" value={o.v} checked={value === o.v} disabled={o.off} onChange={() => onChange(o.v)} />
+            {o.label}{o.sub && <small>{o.sub}</small>}
+          </label>
+        ))}
+      </div>
+      <p className="pp-hint">Selected: <b>{value}</b> · Periods before the invoice date ({MON[minM]} {minY}) can&apos;t be chosen.</p>
+    </div>
+  );
+}
+
 const CLOSED: Record<string, string> = {
   EXPIRED: "The time limit for this confirmation has passed. The request is closed and can no longer be answered.",
   CANCELLED: "This request was withdrawn by the FTA. No action is needed from you.",
@@ -110,8 +148,10 @@ export default function RequestPage() {
   const [matches, setMatches] = useState<boolean | null>(null);
   const [edit, setEdit] = useState<Record<string, string>>({});
   const [paid, setPaid] = useState<"RECEIVED" | "PARTIAL_OR_RETENTION">("RECEIVED");
-  const [f, setF] = useState({ received_date: "", amount_received: "", retention_amount: "", retention_release_date: "", vat_return_period: "", declared_by: "", declaration: false });
+  const [f, setF] = useState({ received_date: "", amount_received: "", retention_amount: "", retention_release_date: "", declared_by: "", declaration: false });
   const set = (k: keyof typeof f, v: string | boolean) => setF((p) => ({ ...p, [k]: v }));
+  const [picked, setPicked] = useState("");
+  const period = picked || (data ? defaultPeriod(data.invoice.invoice_date) : "");
 
   useEffect(() => {
     if (trn) getRequest(id).then(setData).catch((e) => setErr(e.message));
@@ -139,14 +179,21 @@ export default function RequestPage() {
         if (f.retention_amount) body.retention_amount = Number(f.retention_amount);
         if (f.retention_release_date) body.retention_release_date = f.retention_release_date;
       }
-      if (f.vat_return_period) body.vat_return_period = f.vat_return_period;
+      body.vat_return_period = period;
     }
     try { setData(await respond(data.request.id, body)); }
     catch (x) { setErr((x as Error).message); }
     setBusy(false);
   }
 
-  const ready = issued !== null && (!issued || (matches !== null && !!f.vat_return_period)) && !!f.declared_by && f.declaration;
+  // Say what is still missing instead of leaving a silently disabled button.
+  const missing = [
+    issued === null && "answer question 1",
+    issued && matches === null && "answer question 2",
+    !f.declared_by.trim() && "enter who is declaring",
+    !f.declaration && "tick the declaration",
+  ].filter(Boolean);
+  const ready = missing.length === 0;
   const done = data && data.request.status !== "PENDING";
 
   return (
@@ -208,13 +255,14 @@ export default function RequestPage() {
                   )}
                 </Q>
                 <Q n={4} text="VAT return period in which this supply was declared">
-                  <div className="field"><input aria-label="VAT return period" placeholder="2026-Q2 or Apr-2026" value={f.vat_return_period} onChange={(e) => set("vat_return_period", e.target.value)} /></div>
+                  <PeriodPicker value={period} onChange={setPicked} invoiceDate={data.invoice.invoice_date} />
                 </Q>
               </>}
               <div className="declare">
                 <div className="field"><label htmlFor="by">Declared by (name or email)</label><input id="by" value={f.declared_by} onChange={(e) => set("declared_by", e.target.value)} /></div>
                 <label className="check"><input type="checkbox" checked={f.declaration} onChange={(e) => set("declaration", e.target.checked)} /><span>I declare that the information provided is true and correct.</span></label>
                 <button className="btn primary lg" disabled={!ready || busy}><span>{busy ? "Submitting…" : "Submit response"}</span>{!busy && <Icon n="arrow" s={18} />}</button>
+                {!ready && <p className="pp-hint" role="status">To submit: {missing.join(", ")}.</p>}
               </div>
             </form>
           )}
