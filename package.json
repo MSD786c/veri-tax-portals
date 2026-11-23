@@ -1,0 +1,12 @@
+{
+  "name": "veri-tax-portals",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:emaratax": "pnpm --filter emaratax-portal dev",
+    "dev:fta": "pnpm --filter fta-dashboard dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  }
+}
