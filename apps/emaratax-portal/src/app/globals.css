@@ -90,3 +90,28 @@
   .declare .btn { justify-self: stretch; }
 }
 @media (max-width: 900px) { .login-split .login-brand, .login-split .login-points { display: none; } }
+
+/* VAT return period picker (request page, Q4) */
+.pp { display: grid; gap: 12px; }
+.pp-switch { display: inline-flex; align-items: center; gap: 10px; width: fit-content; font-weight: 600; cursor: pointer; }
+.pp-switch input { appearance: none; position: relative; width: 40px; height: 24px; margin: 0; border-radius: 999px; background: var(--line-2); cursor: pointer; transition: background .2s; }
+.pp-switch input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transition: transform .2s; }
+.pp-switch input:checked { background: var(--navy); }
+.pp-switch input:checked::before { transform: translateX(16px); }
+.pp-switch input:focus-visible, .pp-nav:focus-visible { outline: 3px solid rgba(209, 171, 77, .75); outline-offset: 3px; }
+.pp-year { display: flex; align-items: center; justify-content: space-between; max-width: 320px; }
+.pp-year b { font-variant-numeric: tabular-nums; font-size: 1.05rem; }
+.pp-nav { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-2); background: #fff; color: var(--ink); cursor: pointer; }
+.pp-nav:hover:not(:disabled) { border-color: var(--ink); }
+.pp-nav:disabled { opacity: .35; cursor: not-allowed; }
+.pp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 420px; }
+.pp-grid label { display: grid; place-items: center; align-content: center; min-height: 40px; padding: 4px 6px; border-radius: 999px; border: 1px solid var(--line-2); background: #fff; font-weight: 600; font-size: .9rem; cursor: pointer; transition: border-color .2s, background .25s, color .25s; }
+.pp-grid.q label { border-radius: 18px; min-height: 52px; }
+.pp-grid small { font-size: .7rem; font-weight: 500; color: var(--muted); }
+.pp-grid label:hover:not(.off) { border-color: var(--ink); }
+.pp-grid label.on { background: linear-gradient(135deg, var(--navy-2), var(--navy)); border-color: var(--navy); color: #fff; }
+.pp-grid label.on small { color: #e2c777; }
+.pp-grid label.off { opacity: .35; cursor: not-allowed; background: transparent; }
+.pp-grid label:has(:focus-visible) { outline: 3px solid rgba(209, 171, 77, .75); outline-offset: 3px; }
+.pp-hint { margin: 0; color: var(--muted); font-size: .85rem; }
+@media (max-width: 420px) { .pp-grid.q { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
